@@ -1,0 +1,44 @@
+name: test
+
+concurrency:
+  group: build-docker-image-${{ github.sha }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type: 
+        description: 'CMake Build Type (Only effective when triggered manually)'
+        options: [Debug, Release, RelWithDebInfo, MinSizeRel]
+  pull_request:
+    paths-ignore:
+      - tlaplus/**
+    branches:
+      - main
+  push:
+    paths-ignore:
+      - tlaplus/**
+    branches:
+      - main
+      - ci/*
+    tags:
+      - "*"
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run normal step
+        run: echo "This step always runs"
+
+      - name: Run only on tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: echo "This step runs only when triggered by a tag"
