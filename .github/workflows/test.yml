@@ -38,6 +38,15 @@ jobs:
 
       - name: Run normal step
         run: echo "This step always runs"
+        
+  test-job2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run normal step
+        run: echo "This step always runs"
 
       - name: Run only on tag
         if: startsWith(github.ref, 'refs/tags/')
