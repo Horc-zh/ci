@@ -1,4 +1,4 @@
-name: test
+name: Build Docker Image
 
 concurrency:
   group: build-docker-image-${{ github.sha }}
@@ -7,8 +7,8 @@ concurrency:
 on:
   workflow_dispatch:
     inputs:
-      build_type: 
-        description: 'CMake Build Type (Only effective when triggered manually)'
+      build_type:
+        description: "CMake Build Type (Only effective when triggered manually)"
         options: [Debug, Release, RelWithDebInfo, MinSizeRel]
   pull_request:
     paths-ignore:
@@ -30,24 +30,23 @@ permissions:
   id-token: write
 
 jobs:
-  test-job:
-    runs-on: ubuntu-latest
+  flowmq-version:
+    runs-on: ubuntu-latest-4c
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Set FLOWMQ_VERSION
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "FLOWMQ_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+            LAST_TAG=$(git tag --list --sort=-creatordate | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$LAST_TAG"
+            NEW_MINOR=$((MINOR + 1))
+            echo "FLOWMQ_VERSION=${MAJOR}.${NEW_MINOR}.0-dev" >> $GITHUB_ENV
+          fi
+          
+      - name: echo FLOWMQ_VERSION
+        run: |
+          echo ${{ env.FLOWMQ_VERSION }}
 
-      - name: Run normal step
-        run: echo "This step always runs"
-        
-  test-job2:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run normal step
-        run: echo "This step always runs"
-
-      - name: Run only on tag
-        if: startsWith(github.ref, 'refs/tags/')
-        run: echo "This step runs only when triggered by a tag"
