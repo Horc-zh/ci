@@ -1,9 +1,5 @@
 name: Build Docker Image
 
-concurrency:
-  group: build-docker-image-${{ github.sha }}
-  cancel-in-progress: true
-
 on:
   workflow_dispatch:
     inputs:
@@ -45,8 +41,7 @@ jobs:
             NEW_MINOR=$((MINOR + 1))
             echo "FLOWMQ_VERSION=${MAJOR}.${NEW_MINOR}.0-dev" >> $GITHUB_ENV
           fi
-          
+
       - name: echo FLOWMQ_VERSION
         run: |
           echo ${{ env.FLOWMQ_VERSION }}
-
